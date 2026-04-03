@@ -32,7 +32,7 @@ st.markdown("""
 TYPE_COLORS = {
     "BOTH":         "#22c55e",
     "PUBLISHER":    "#06b6d4",
-    "INTERMEDIARY": "#86efaf",
+    "INTERMEDIARY": "#f8dcca",
     "UNKNOWN":      "#888780",
 }
 
