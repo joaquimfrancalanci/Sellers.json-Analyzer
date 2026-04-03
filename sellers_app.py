@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import requests
 
 st.set_page_config(
-    page_title="Ogury Sellers.json Analyzer",
+    page_title="Sellers.json Analyzer",
     page_icon="📊",
     layout="wide"
 )
@@ -23,11 +23,16 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-SELLERS_URL = "https://sellers.ogury.com/"
+SOURCES = {
+    "Ogury": "https://sellers.ogury.com/",
+    "Pubmatic": "https://cdn.pubmatic.com/sellers/data/sellers.json",
+    "Teads": "https://sellers.teads.tv/sellers.json",
+}
 
 @st.cache_data(ttl=3600)
-def load_data():
-    resp = requests.get(SELLERS_URL, timeout=15)
+def load_data(url: str):
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; SellersJsonAnalyzer/1.0)"}
+    resp = requests.get(url, timeout=15, headers=headers)
     resp.raise_for_status()
     data = resp.json()
     sellers = data.get("sellers", [])
@@ -35,22 +40,44 @@ def load_data():
     df["seller_type"] = df["seller_type"].fillna("UNKNOWN")
     df["name"] = df["name"].fillna("N/A")
     df["domain"] = df["domain"].fillna("N/A")
-    df["is_confidential"] = df.get("is_confidential", pd.Series([False] * len(df)))
+    if "is_confidential" not in df.columns:
+        df["is_confidential"] = False
     return df, data.get("version"), data.get("identifiers", [])
 
-st.title("📊 Ogury Sellers.json Analyzer")
-st.caption(f"Source: {SELLERS_URL}")
+st.title("📊 Sellers.json Analyzer")
 
-with st.spinner("Loading sellers.json..."):
+col_src, col_refresh = st.columns([4, 1])
+with col_src:
+    selected_source = st.radio(
+        "Source",
+        options=list(SOURCES.keys()),
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+with col_refresh:
+    if st.button("🔄 Refresh", type="secondary"):
+        st.cache_data.clear()
+        st.rerun()
+
+active_url = SOURCES[selected_source]
+st.caption(f"Source: {active_url}")
+
+with st.spinner(f"Loading {selected_source} sellers.json..."):
     try:
-        df, version, identifiers = load_data()
+        df, version, identifiers = load_data(active_url)
+    except requests.exceptions.HTTPError as e:
+        st.error(f"HTTP error loading {selected_source}: {e}")
+        st.stop()
+    except requests.exceptions.ConnectionError:
+        st.error(f"Could not connect to {active_url}. Check your internet connection.")
+        st.stop()
     except Exception as e:
         st.error(f"Failed to load sellers.json: {e}")
         st.stop()
 
-if st.button("🔄 Refresh data", type="secondary"):
-    st.cache_data.clear()
-    st.rerun()
+if df.empty:
+    st.warning("No sellers found in this file.")
+    st.stop()
 
 st.markdown("---")
 
@@ -167,7 +194,12 @@ with tab2:
     )
 
     csv = filtered.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Download filtered results as CSV", csv, "ogury_sellers_filtered.csv", "text/csv")
+    st.download_button(
+        "⬇️ Download filtered results as CSV",
+        csv,
+        f"{selected_source.lower()}_sellers_filtered.csv",
+        "text/csv"
+    )
 
 with tab3:
     st.subheader("Domain Analysis")
@@ -242,7 +274,12 @@ with tab4:
         height=600
     )
     csv_all = df.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Download full sellers.json as CSV", csv_all, "ogury_sellers_full.csv", "text/csv")
+    st.download_button(
+        "⬇️ Download full sellers.json as CSV",
+        csv_all,
+        f"{selected_source.lower()}_sellers_full.csv",
+        "text/csv"
+    )
 
 st.markdown("---")
-st.caption("Data loaded live from https://sellers.ogury.com/ · Cached for 1 hour · Built with Streamlit")
+st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
