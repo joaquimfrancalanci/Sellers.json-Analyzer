@@ -20,8 +20,21 @@ st.markdown("""
     }
     .stMetric label { font-size: 13px !important; color: #666 !important; }
     .stMetric [data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 600 !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0.5rem; }
+    thead tr { background: #f8f9fa; border-bottom: 2px solid #e0e0e0; }
+    thead th { padding: 10px 14px; text-align: left; font-weight: 600; color: #444; font-size: 13px; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 8px 14px; color: #333; vertical-align: middle; }
 </style>
 """, unsafe_allow_html=True)
+
+TYPE_COLORS = {
+    "BOTH":         "#22c55e",
+    "PUBLISHER":    "#06b6d4",
+    "INTERMEDIARY": "#86efaf",
+    "UNKNOWN":      "#888780",
+}
 
 SOURCES = {
     "Ogury": "https://sellers.ogury.com/",
@@ -110,12 +123,7 @@ with tab1:
             values="Count",
             title="Seller Type Distribution",
             color="Seller Type",
-            color_discrete_map={
-                "PUBLISHER": "#1D9E75",
-                "INTERMEDIARY": "#378ADD",
-                "BOTH": "#EF9F27",
-                "UNKNOWN": "#888780"
-            },
+            color_discrete_map=TYPE_COLORS,
             hole=0.4
         )
         fig_pie.update_traces(textposition="outside", textinfo="percent+label")
@@ -129,12 +137,7 @@ with tab1:
             y="Count",
             title="Seller Count by Type",
             color="Seller Type",
-            color_discrete_map={
-                "PUBLISHER": "#1D9E75",
-                "INTERMEDIARY": "#378ADD",
-                "BOTH": "#EF9F27",
-                "UNKNOWN": "#888780"
-            },
+            color_discrete_map=TYPE_COLORS,
             text="Count"
         )
         fig_bar.update_traces(textposition="outside")
@@ -181,16 +184,20 @@ with tab2:
 
     st.markdown(f"**{len(filtered):,}** results")
 
-    st.dataframe(
-        filtered[["name", "domain", "seller_type", "seller_id"]].reset_index(drop=True),
-        use_container_width=True,
-        height=450,
-        column_config={
-            "name": st.column_config.TextColumn("Publisher Name", width="medium"),
-            "domain": st.column_config.TextColumn("Domain", width="medium"),
-            "seller_type": st.column_config.TextColumn("Type", width="small"),
-            "seller_id": st.column_config.TextColumn("Seller ID", width="large"),
-        }
+    def tag_html(t):
+        css = {
+            "BOTH": "background:#d4f5e2;color:#0a5c35",
+            "PUBLISHER": "background:#cff4fc;color:#0c5460",
+            "INTERMEDIARY": "background:#e8f8ee;color:#1a6b3a",
+        }.get(t, "background:#f0f0f0;color:#666")
+        return f'<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;{css}">{t}</span>'
+
+    display_df = filtered[["name", "domain", "seller_type", "seller_id"]].copy().reset_index(drop=True)
+    display_df["seller_type"] = display_df["seller_type"].apply(tag_html)
+
+    st.write(
+        display_df.to_html(escape=False, index=False),
+        unsafe_allow_html=True
     )
 
     csv = filtered.to_csv(index=False).encode("utf-8")
@@ -234,12 +241,7 @@ with tab3:
             x="tld",
             y="count",
             color="seller_type",
-            color_discrete_map={
-                "PUBLISHER": "#1D9E75",
-                "INTERMEDIARY": "#378ADD",
-                "BOTH": "#EF9F27",
-                "UNKNOWN": "#888780"
-            },
+            color_discrete_map=TYPE_COLORS,
             title="Seller Type by TLD",
             barmode="stack"
         )
