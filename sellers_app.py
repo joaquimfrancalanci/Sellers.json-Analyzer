@@ -46,8 +46,6 @@ st.markdown("""
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         margin-bottom: 1rem;
     }
-    .stMetric label { font-size: 13px !important; color: #666 !important; }
-    .stMetric [data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 600 !important; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0.5rem; }
     thead tr { background: #f8f9fa; border-bottom: 2px solid #e0e0e0; }
     thead th { padding: 10px 14px; text-align: left; font-weight: 600; color: #444; font-size: 13px; }
@@ -60,6 +58,25 @@ st.markdown("""
         padding: 1.2rem;
         color: white;
         margin-top: 1rem;
+        text-align: center;
+    }
+    .feedback-button {
+        background-color: white;
+        color: #764ba2;
+        border: none;
+        border-radius: 30px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+    .feedback-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .stButton button {
         border-radius: 20px;
@@ -127,30 +144,26 @@ with st.sidebar:
         )
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Feedback Section with embedded Google Form
+    # Feedback Section with button link to Google Form
     st.markdown("---")
     st.markdown('<div class="feedback-card">', unsafe_allow_html=True)
     st.markdown("### 💬 Send Feedback")
+    st.markdown("Help us improve the Sellers.json Analyzer!")
     st.markdown("Rate the app and share your suggestions (only @ogury.co emails).")
     
-    # Embedded Google Form (replace with your actual form URL if needed)
-    GOOGLE_FORM_EMBED_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?embedded=true"
+    # Google Form URL (your published form)
+    GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
     
-    st.components.v1.html(
-        f"""
-        <iframe src="{GOOGLE_FORM_EMBED_URL}" 
-                width="100%" 
-                height="500" 
-                frameborder="0" 
-                marginheight="0" 
-                marginwidth="0">
-            Loading…
-        </iframe>
-        """,
-        height=520,
-    )
+    # Create a button that opens the form in a new tab
+    st.markdown(f"""
+    <a href="{GOOGLE_FORM_URL}" target="_blank">
+        <button class="feedback-button">
+            📝 Open Feedback Form
+        </button>
+    </a>
+    """, unsafe_allow_html=True)
     
-    st.caption("Your feedback helps us improve. Responses go directly to the admin.")
+    st.caption("Opens in a new tab. Your responses go directly to the admin.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
@@ -410,4 +423,4 @@ with tab4:
 
 st.markdown("---")
 st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
-st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or send feedback via the embedded form!")
+st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or click 'Open Feedback Form' to share your thoughts.")
