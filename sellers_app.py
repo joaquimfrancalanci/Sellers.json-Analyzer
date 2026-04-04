@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import requests
-import urllib.parse
 from datetime import datetime
 
 st.set_page_config(
@@ -62,9 +61,6 @@ st.markdown("""
         color: white;
         margin-top: 1rem;
     }
-    .feedback-card .stTextInput label, .feedback-card .stTextArea label {
-        color: white !important;
-    }
     .stButton button {
         border-radius: 20px;
     }
@@ -99,30 +95,15 @@ def load_data(url: str):
         df["is_confidential"] = False
     return df, data.get("version"), data.get("identifiers", [])
 
-# Feedback email function
-def send_feedback_email(name, email, feedback):
-    subject = f"Sellers.json Analyzer Feedback from {name}"
-    body = f"""
-Name: {name}
-Email: {email}
-Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Feedback:
-{feedback}
-
----
-Sent from Sellers.json Analyzer App
-    """
-    mailto_link = f"mailto:joaquim.francalanci@ogury.co?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
-    return mailto_link
-
 st.title("📊 Sellers.json Analyzer")
 
 # Sidebar for Controls and Feedback
 with st.sidebar:
+    st.markdown("## 🎛️ Controls")
     
     # Selection box for source
     with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📡 Data Source Selection")
         selected_source = st.selectbox(
             "Choose sellers.json source",
@@ -134,8 +115,9 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Additional selection box for analysis options 
+    # Additional selection box for analysis options
     with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📊 Analysis Options")
         top_n_domains = st.selectbox(
             "Top domains to display",
@@ -145,31 +127,34 @@ with st.sidebar:
         )
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Feedback Section
+    # Feedback Section with embedded Google Form
     st.markdown("---")
+    st.markdown('<div class="feedback-card">', unsafe_allow_html=True)
     st.markdown("### 💬 Send Feedback")
-    st.markdown("Help improve this tool!")
+    st.markdown("Rate the app and share your suggestions (only @ogury.co emails).")
     
-    with st.form("feedback_form"):
-        fb_name = st.text_input("Your name", placeholder="John Doe")
-        fb_email = st.text_input("Your email (optional)", placeholder="john@example.com")
-        fb_message = st.text_area("Feedback / Suggestion", 
-                                  placeholder="What would you like to see improved? Found a bug?",
-                                  height=120)
-        submitted = st.form_submit_button("📧 Send Feedback", use_container_width=True)
-        
-        if submitted:
-            if fb_name and fb_message:
-                mailto_link = send_feedback_email(fb_name, fb_email or "anonymous", fb_message)
-                st.success("✅ Click the link below to send your feedback via email:")
-                st.link_button("✉️ Open Email Client", mailto_link, use_container_width=True)
-                st.caption("Your default email client will open with pre-filled content.")
-            else:
-                st.error("Please provide your name and feedback message.")
+    # Embedded Google Form (replace with your actual form URL if needed)
+    GOOGLE_FORM_EMBED_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?embedded=true"
+    
+    st.components.v1.html(
+        f"""
+        <iframe src="{GOOGLE_FORM_EMBED_URL}" 
+                width="100%" 
+                height="500" 
+                frameborder="0" 
+                marginheight="0" 
+                marginwidth="0">
+            Loading…
+        </iframe>
+        """,
+        height=520,
+    )
+    
+    st.caption("Your feedback helps us improve. Responses go directly to the admin.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
-    st.caption(f"📌 Feedback sent to: joaquim.francalanci@ogury.co")
+    st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
 # Main content area
 active_url = SOURCES[selected_source]
@@ -194,7 +179,7 @@ if df.empty:
 
 st.markdown("---")
 
-# KPI metrics displayed in styled boxes
+# KPI metrics displayed in styled boxes (border + background)
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -234,7 +219,7 @@ with col4:
 
 st.markdown("---")
 
-# Tabs panel for different analyses
+# Tabs panel
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
 with tab1:
@@ -425,4 +410,4 @@ with tab4:
 
 st.markdown("---")
 st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
-st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or send feedback!")
+st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or send feedback via the embedded form!")
