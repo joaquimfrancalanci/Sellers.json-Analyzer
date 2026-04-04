@@ -16,10 +16,28 @@ st.set_page_config(
 st.markdown("""
 <style>
     .metric-card {
-        background: #f8f9fa;
+        background: #ffffff;
         border-radius: 12px;
-        padding: 1.2rem 1.5rem;
+        padding: 1rem 1.2rem;
         border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }
+    .metric-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #c0c0c0;
+    }
+    .metric-card .metric-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .metric-card .metric-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.2;
     }
     .selection-box {
         background: #ffffff;
@@ -95,17 +113,16 @@ Feedback:
 ---
 Sent from Sellers.json Analyzer App
     """
-    # Create mailto link
     mailto_link = f"mailto:joaquim.francalanci@ogury.co?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
     return mailto_link
 
 st.title("📊 Sellers.json Analyzer")
 
-# Sidebar for Feedback
+# Sidebar for Controls and Feedback
 with st.sidebar:
     st.markdown("## 🎛️ Controls")
     
-    # Selection box for source (box per le selezioni)
+    # Selection box for source
     with st.container():
         st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📡 Data Source Selection")
@@ -119,7 +136,7 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Additional selection box for analysis options
+    # Additional selection box for analysis options (without chart theme)
     with st.container():
         st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📊 Analysis Options")
@@ -128,11 +145,6 @@ with st.sidebar:
             options=[10, 20, 30, 50],
             index=1,
             help="Number of top domains shown in the overview"
-        )
-        chart_theme = st.selectbox(
-            "Chart theme",
-            options=["plotly", "plotly_white", "plotly_dark"],
-            index=0
         )
         st.markdown('</div>', unsafe_allow_html=True)
     
@@ -186,23 +198,47 @@ if df.empty:
 
 st.markdown("---")
 
-# Metrics row
+# KPI metrics displayed in styled boxes (border + background)
 col1, col2, col3, col4 = st.columns(4)
+
 with col1:
-    st.metric("Total Sellers", f"{len(df):,}")
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-label">Total Sellers</div>
+        <div class="metric-value">{:,}</div>
+    </div>
+    """.format(len(df)), unsafe_allow_html=True)
+
 with col2:
     publishers = len(df[df["seller_type"] == "PUBLISHER"])
-    st.metric("Publishers", f"{publishers:,}")
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-label">Publishers</div>
+        <div class="metric-value">{:,}</div>
+    </div>
+    """.format(publishers), unsafe_allow_html=True)
+
 with col3:
     intermediaries = len(df[df["seller_type"] == "INTERMEDIARY"])
-    st.metric("Intermediaries", f"{intermediaries:,}")
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-label">Intermediaries</div>
+        <div class="metric-value">{:,}</div>
+    </div>
+    """.format(intermediaries), unsafe_allow_html=True)
+
 with col4:
     both = len(df[df["seller_type"] == "BOTH"])
-    st.metric("Both", f"{both:,}")
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-label">Both</div>
+        <div class="metric-value">{:,}</div>
+    </div>
+    """.format(both), unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Tabs
+# Tabs panel (fixed)
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
 with tab1:
@@ -221,7 +257,7 @@ with tab1:
             hole=0.4
         )
         fig_pie.update_traces(textposition="outside", textinfo="percent+label")
-        fig_pie.update_layout(showlegend=False, height=380, template=chart_theme)
+        fig_pie.update_layout(showlegend=False, height=380)
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with col_b:
@@ -235,7 +271,7 @@ with tab1:
             text="Count"
         )
         fig_bar.update_traces(textposition="outside")
-        fig_bar.update_layout(showlegend=False, height=380, yaxis_title="Count", template=chart_theme)
+        fig_bar.update_layout(showlegend=False, height=380, yaxis_title="Count")
         st.plotly_chart(fig_bar, use_container_width=True)
 
     st.subheader(f"Top {top_n_domains} Domains by Seller Count")
@@ -250,7 +286,7 @@ with tab1:
         color_continuous_scale=["#9FE1CB", "#0F6E56"],
         title=f"Top {top_n_domains} Domains"
     )
-    fig_domains.update_layout(height=550, yaxis={"categoryorder": "total ascending"}, coloraxis_showscale=False, template=chart_theme)
+    fig_domains.update_layout(height=550, yaxis={"categoryorder": "total ascending"}, coloraxis_showscale=False)
     st.plotly_chart(fig_domains, use_container_width=True)
 
 with tab2:
@@ -334,7 +370,7 @@ with tab3:
             color_continuous_scale=["#9FE1CB", "#0F6E56"],
             title=f"Top {top_tlds_to_show} TLDs"
         )
-        fig_tld.update_layout(coloraxis_showscale=False, height=380, template=chart_theme)
+        fig_tld.update_layout(coloraxis_showscale=False, height=380)
         st.plotly_chart(fig_tld, use_container_width=True)
 
     with col_d2:
@@ -353,7 +389,7 @@ with tab3:
             title="Seller Type by TLD",
             barmode="stack"
         )
-        fig_tld_type.update_layout(height=380, xaxis_title="TLD", yaxis_title="Count", template=chart_theme)
+        fig_tld_type.update_layout(height=380, xaxis_title="TLD", yaxis_title="Count")
         st.plotly_chart(fig_tld_type, use_container_width=True)
 
     st.subheader(f"Domains with {show_multi_domain_threshold}+ Seller IDs")
