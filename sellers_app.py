@@ -116,11 +116,9 @@ st.title("📊 Sellers.json Analyzer")
 
 # Sidebar for Controls and Feedback
 with st.sidebar:
-    st.markdown("## 🎛️ Controls")
     
     # Selection box for source
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📡 Data Source Selection")
         selected_source = st.selectbox(
             "Choose sellers.json source",
@@ -134,7 +132,6 @@ with st.sidebar:
     
     # Additional selection box for analysis options
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📊 Analysis Options")
         top_n_domains = st.selectbox(
             "Top domains to display",
@@ -165,7 +162,6 @@ with st.sidebar:
     
     st.caption("Opens in a new tab. Your responses go directly to the admin.")
     st.markdown('</div>', unsafe_allow_html=True)
-    
     st.markdown("---")
     st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
@@ -288,7 +284,7 @@ with tab2:
     
     # Selection box for filters
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        
         col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
         with col_f1:
             search_query = st.text_input("🔍 Search by name, domain or seller ID", placeholder="e.g. Google, publisher.com...")
@@ -341,7 +337,7 @@ with tab3:
     
     # Selection box for domain analysis options
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        
         col_d_opt1, col_d_opt2 = st.columns(2)
         with col_d_opt1:
             top_tlds_to_show = st.selectbox("Number of TLDs to display", [10, 15, 20, 25], index=1)
