@@ -120,11 +120,9 @@ st.title("📊 Sellers.json Analyzer")
 
 # Sidebar for Controls and Feedback
 with st.sidebar:
-    st.markdown("## 🎛️ Controls")
     
     # Selection box for source
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📡 Data Source Selection")
         selected_source = st.selectbox(
             "Choose sellers.json source",
@@ -136,9 +134,8 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Additional selection box for analysis options (without chart theme)
+    # Additional selection box for analysis options 
     with st.container():
-        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
         st.markdown("### 📊 Analysis Options")
         top_n_domains = st.selectbox(
             "Top domains to display",
@@ -150,7 +147,6 @@ with st.sidebar:
     
     # Feedback Section
     st.markdown("---")
-    st.markdown('<div class="feedback-card">', unsafe_allow_html=True)
     st.markdown("### 💬 Send Feedback")
     st.markdown("Help improve this tool!")
     
@@ -198,7 +194,7 @@ if df.empty:
 
 st.markdown("---")
 
-# KPI metrics displayed in styled boxes (border + background)
+# KPI metrics displayed in styled boxes
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -238,7 +234,7 @@ with col4:
 
 st.markdown("---")
 
-# Tabs panel (fixed)
+# Tabs panel for different analyses
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
 with tab1:
