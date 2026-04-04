@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import requests
+import urllib.parse
+from datetime import datetime
 
 st.set_page_config(
     page_title="Sellers.json Analyzer",
@@ -10,6 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom CSS for boxes and cards
 st.markdown("""
 <style>
     .metric-card {
@@ -17,6 +20,14 @@ st.markdown("""
         border-radius: 12px;
         padding: 1.2rem 1.5rem;
         border: 1px solid #e0e0e0;
+    }
+    .selection-box {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 1rem;
     }
     .stMetric label { font-size: 13px !important; color: #666 !important; }
     .stMetric [data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 600 !important; }
@@ -26,6 +37,19 @@ st.markdown("""
     tbody tr { border-bottom: 1px solid #f0f0f0; }
     tbody tr:hover { background: #fafafa; }
     tbody td { padding: 8px 14px; color: #333; vertical-align: middle; }
+    .feedback-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 1.2rem;
+        color: white;
+        margin-top: 1rem;
+    }
+    .feedback-card .stTextInput label, .feedback-card .stTextArea label {
+        color: white !important;
+    }
+    .stButton button {
+        border-radius: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -57,23 +81,91 @@ def load_data(url: str):
         df["is_confidential"] = False
     return df, data.get("version"), data.get("identifiers", [])
 
+# Feedback email function
+def send_feedback_email(name, email, feedback):
+    subject = f"Sellers.json Analyzer Feedback from {name}"
+    body = f"""
+Name: {name}
+Email: {email}
+Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Feedback:
+{feedback}
+
+---
+Sent from Sellers.json Analyzer App
+    """
+    # Create mailto link
+    mailto_link = f"mailto:joaquim.francalanci@ogury.co?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+    return mailto_link
+
 st.title("📊 Sellers.json Analyzer")
 
-col_src, col_refresh = st.columns([4, 1])
-with col_src:
-    selected_source = st.radio(
-        "Source",
-        options=list(SOURCES.keys()),
-        horizontal=True,
-        label_visibility="collapsed"
-    )
-with col_refresh:
-    if st.button("🔄 Refresh", type="secondary"):
-        st.cache_data.clear()
-        st.rerun()
+# Sidebar for Feedback
+with st.sidebar:
+    st.markdown("## 🎛️ Controls")
+    
+    # Selection box for source (box per le selezioni)
+    with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        st.markdown("### 📡 Data Source Selection")
+        selected_source = st.selectbox(
+            "Choose sellers.json source",
+            options=list(SOURCES.keys()),
+            help="Select the adtech platform to analyze"
+        )
+        if st.button("🔄 Refresh Data", type="secondary", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Additional selection box for analysis options
+    with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        st.markdown("### 📊 Analysis Options")
+        top_n_domains = st.selectbox(
+            "Top domains to display",
+            options=[10, 20, 30, 50],
+            index=1,
+            help="Number of top domains shown in the overview"
+        )
+        chart_theme = st.selectbox(
+            "Chart theme",
+            options=["plotly", "plotly_white", "plotly_dark"],
+            index=0
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Feedback Section
+    st.markdown("---")
+    st.markdown('<div class="feedback-card">', unsafe_allow_html=True)
+    st.markdown("### 💬 Send Feedback")
+    st.markdown("Help improve this tool!")
+    
+    with st.form("feedback_form"):
+        fb_name = st.text_input("Your name", placeholder="John Doe")
+        fb_email = st.text_input("Your email (optional)", placeholder="john@example.com")
+        fb_message = st.text_area("Feedback / Suggestion", 
+                                  placeholder="What would you like to see improved? Found a bug?",
+                                  height=120)
+        submitted = st.form_submit_button("📧 Send Feedback", use_container_width=True)
+        
+        if submitted:
+            if fb_name and fb_message:
+                mailto_link = send_feedback_email(fb_name, fb_email or "anonymous", fb_message)
+                st.success("✅ Click the link below to send your feedback via email:")
+                st.link_button("✉️ Open Email Client", mailto_link, use_container_width=True)
+                st.caption("Your default email client will open with pre-filled content.")
+            else:
+                st.error("Please provide your name and feedback message.")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.caption(f"📌 Feedback sent to: joaquim.francalanci@ogury.co")
 
+# Main content area
 active_url = SOURCES[selected_source]
-st.caption(f"Source: {active_url}")
+st.caption(f"**Active Source:** {active_url}")
 
 with st.spinner(f"Loading {selected_source} sellers.json..."):
     try:
@@ -94,6 +186,7 @@ if df.empty:
 
 st.markdown("---")
 
+# Metrics row
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric("Total Sellers", f"{len(df):,}")
@@ -109,6 +202,7 @@ with col4:
 
 st.markdown("---")
 
+# Tabs
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
 with tab1:
@@ -127,7 +221,7 @@ with tab1:
             hole=0.4
         )
         fig_pie.update_traces(textposition="outside", textinfo="percent+label")
-        fig_pie.update_layout(showlegend=False, height=380)
+        fig_pie.update_layout(showlegend=False, height=380, template=chart_theme)
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with col_b:
@@ -141,11 +235,11 @@ with tab1:
             text="Count"
         )
         fig_bar.update_traces(textposition="outside")
-        fig_bar.update_layout(showlegend=False, height=380, yaxis_title="Count")
+        fig_bar.update_layout(showlegend=False, height=380, yaxis_title="Count", template=chart_theme)
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.subheader("Top 20 Domains by Seller Count")
-    domain_counts = df[df["domain"] != "N/A"]["domain"].value_counts().head(20).reset_index()
+    st.subheader(f"Top {top_n_domains} Domains by Seller Count")
+    domain_counts = df[df["domain"] != "N/A"]["domain"].value_counts().head(top_n_domains).reset_index()
     domain_counts.columns = ["Domain", "Count"]
     fig_domains = px.bar(
         domain_counts,
@@ -154,21 +248,25 @@ with tab1:
         orientation="h",
         color="Count",
         color_continuous_scale=["#9FE1CB", "#0F6E56"],
-        title="Top 20 Domains"
+        title=f"Top {top_n_domains} Domains"
     )
-    fig_domains.update_layout(height=550, yaxis={"categoryorder": "total ascending"}, coloraxis_showscale=False)
+    fig_domains.update_layout(height=550, yaxis={"categoryorder": "total ascending"}, coloraxis_showscale=False, template=chart_theme)
     st.plotly_chart(fig_domains, use_container_width=True)
 
 with tab2:
     st.subheader("Search & Filter Sellers")
-
-    col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
-    with col_f1:
-        search_query = st.text_input("🔍 Search by name, domain or seller ID", placeholder="e.g. Google, publisher.com...")
-    with col_f2:
-        type_filter = st.multiselect("Seller Type", options=sorted(df["seller_type"].unique()), default=sorted(df["seller_type"].unique()))
-    with col_f3:
-        sort_by = st.selectbox("Sort by", ["name", "domain", "seller_type"])
+    
+    # Selection box for filters
+    with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
+        with col_f1:
+            search_query = st.text_input("🔍 Search by name, domain or seller ID", placeholder="e.g. Google, publisher.com...")
+        with col_f2:
+            type_filter = st.multiselect("Seller Type", options=sorted(df["seller_type"].unique()), default=sorted(df["seller_type"].unique()))
+        with col_f3:
+            sort_by = st.selectbox("Sort by", ["name", "domain", "seller_type", "seller_id"])
+        st.markdown('</div>', unsafe_allow_html=True)
 
     filtered = df[df["seller_type"].isin(type_filter)].copy()
 
@@ -210,13 +308,23 @@ with tab2:
 
 with tab3:
     st.subheader("Domain Analysis")
+    
+    # Selection box for domain analysis options
+    with st.container():
+        st.markdown('<div class="selection-box">', unsafe_allow_html=True)
+        col_d_opt1, col_d_opt2 = st.columns(2)
+        with col_d_opt1:
+            top_tlds_to_show = st.selectbox("Number of TLDs to display", [10, 15, 20, 25], index=1)
+        with col_d_opt2:
+            show_multi_domain_threshold = st.number_input("Minimum seller IDs per domain", min_value=1, max_value=10, value=2, step=1)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     col_d1, col_d2 = st.columns(2)
 
     with col_d1:
         st.markdown("**Top Level Domain (TLD) Distribution**")
         tld_series = df[df["domain"] != "N/A"]["domain"].dropna().str.extract(r'\.([a-zA-Z]{2,6})$')[0]
-        tld_counts = tld_series.value_counts().head(15).reset_index()
+        tld_counts = tld_series.value_counts().head(top_tlds_to_show).reset_index()
         tld_counts.columns = ["TLD", "Count"]
         fig_tld = px.bar(
             tld_counts,
@@ -224,9 +332,9 @@ with tab3:
             y="Count",
             color="Count",
             color_continuous_scale=["#9FE1CB", "#0F6E56"],
-            title="Top 15 TLDs"
+            title=f"Top {top_tlds_to_show} TLDs"
         )
-        fig_tld.update_layout(coloraxis_showscale=False, height=380)
+        fig_tld.update_layout(coloraxis_showscale=False, height=380, template=chart_theme)
         st.plotly_chart(fig_tld, use_container_width=True)
 
     with col_d2:
@@ -245,17 +353,17 @@ with tab3:
             title="Seller Type by TLD",
             barmode="stack"
         )
-        fig_tld_type.update_layout(height=380, xaxis_title="TLD", yaxis_title="Count")
+        fig_tld_type.update_layout(height=380, xaxis_title="TLD", yaxis_title="Count", template=chart_theme)
         st.plotly_chart(fig_tld_type, use_container_width=True)
 
-    st.subheader("Domains with Multiple Seller IDs")
+    st.subheader(f"Domains with {show_multi_domain_threshold}+ Seller IDs")
     multi_domain = df[df["domain"] != "N/A"].groupby("domain").agg(
         seller_count=("seller_id", "count"),
         seller_types=("seller_type", lambda x: ", ".join(sorted(x.unique())))
     ).reset_index().sort_values("seller_count", ascending=False)
-    multi_domain = multi_domain[multi_domain["seller_count"] > 1]
+    multi_domain = multi_domain[multi_domain["seller_count"] >= show_multi_domain_threshold]
 
-    st.markdown(f"**{len(multi_domain):,}** domains with more than 1 seller ID")
+    st.markdown(f"**{len(multi_domain):,}** domains with {show_multi_domain_threshold}+ seller IDs")
     st.dataframe(
         multi_domain.head(50).reset_index(drop=True),
         use_container_width=True,
@@ -285,3 +393,4 @@ with tab4:
 
 st.markdown("---")
 st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
+st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or send feedback!")
