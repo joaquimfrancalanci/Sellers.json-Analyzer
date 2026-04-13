@@ -132,7 +132,6 @@ with st.sidebar:
     )
 
     st.markdown("### 💬 Send Feedback")
-    st.markdown("Help us improve it!")
 
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
     st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank"><button class="feedback-button">📝 Open Feedback Form</button></a>', unsafe_allow_html=True)
