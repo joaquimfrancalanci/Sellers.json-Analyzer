@@ -131,15 +131,13 @@ with st.sidebar:
         help="Number of top domains shown in the overview"
     )
 
-    st.markdown("---")
+    
     st.markdown("### 💬 Send Feedback")
     st.markdown("Help us improve the Sellers.json Analyzer!")
 
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
     st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank"><button class="feedback-button">📝 Open Feedback Form</button></a>', unsafe_allow_html=True)
-    st.caption("Opens in a new tab. Your responses go directly to the admin.")
-
-    st.markdown("---")
+    st.caption("Opens in a new tab.")
 
     # --- Rating widget ---
     if "submitted_rating" not in st.session_state:
@@ -186,9 +184,6 @@ with st.sidebar:
                                 height:8px;width:{pct}%;border-radius:999px;">
                     </div>
                 </div>
-                <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
-                    {num_responses} response{"s" if num_responses != 1 else ""}
-                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -196,7 +191,6 @@ with st.sidebar:
     else:
         st.caption("⭐ No ratings yet — be the first!")
 
-    st.markdown("---")
     st.caption("📌 Admin: joaquim.francalanci@ogury.co")
 
 # Main content
@@ -220,7 +214,7 @@ if df.empty:
     st.warning("No sellers found in this file.")
     st.stop()
 
-st.markdown("---")
+
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -235,7 +229,7 @@ with col4:
     both = len(df[df["seller_type"] == "BOTH"])
     st.markdown('<div class="metric-card"><div class="metric-label">Both</div><div class="metric-value">{:,}</div></div>'.format(both), unsafe_allow_html=True)
 
-st.markdown("---")
+
 
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
@@ -355,6 +349,6 @@ with tab4:
     st.download_button("⬇️ Download full sellers.json as CSV", csv_all,
                        f"{selected_source.lower()}_sellers_full.csv", "text/csv")
 
-st.markdown("---")
+
 st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
 st.caption("💡 Tip: Use the sidebar to change data source, analysis options, or click 'Open Feedback Form' to share your thoughts.")
