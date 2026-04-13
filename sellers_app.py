@@ -14,6 +14,10 @@ st.set_page_config(
 # Custom CSS for boxes and cards
 st.markdown("""
 <style>
+    div[data-testid="stFeedback"] {
+        display: flex;
+        justify-content: center;
+    }
     .metric-card {
         background: #ffffff;
         border-radius: 12px;
@@ -177,8 +181,6 @@ with st.sidebar:
         </button>
     </a>
     """, unsafe_allow_html=True)
-    
-    st.caption("Opens in a new tab.")
 
     avg_rating, num_responses = get_ratings()
 
@@ -204,27 +206,39 @@ with st.sidebar:
             for i in range(1, 6)
         )
         st.markdown(f"""
-        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;
-                    border-radius:12px;padding:14px 16px;margin-top:8px;">
-            <div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;
-                        letter-spacing:0.8px;margin-bottom:6px;">⭐ User satisfaction</div>
-            <div style="font-size:1.8rem;font-weight:700;color:#15803d;line-height:1;margin-bottom:4px;">
-                {avg_rating} <span style="font-size:13px;font-weight:400;color:#6b7280;">/ 5</span>
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+                        border:1px solid #bbf7d0;
+                        border-radius:12px;
+                        padding:14px 16px;
+                        margin-top:8px;
+                        text-align:center;">
+                
+                <div style="font-size:11px;
+                            color:#6b7280;
+                            font-weight:600;
+                            text-transform:uppercase;
+                            letter-spacing:0.8px;
+                            margin-bottom:6px;">
+                    ⭐ User satisfaction
+                </div>
+                
+                <div style="font-size:1.8rem;
+                            font-weight:700;
+                            color:#15803d;
+                            line-height:1;
+                            margin-bottom:4px;">
+                    {avg_rating} <span style="font-size:13px;font-weight:400;color:#6b7280;">/ 5</span>
+                </div>
+                
+                <div style="margin-bottom:8px;">
+                    {stars}
+                </div>
             </div>
-            <div style="margin-bottom:8px;">{stars}</div>
-            <div style="background:#d1fae5;border-radius:999px;height:8px;overflow:hidden;">
-                <div style="background:linear-gradient(90deg,#34d399,#059669);
-                            height:8px;width:{pct}%;border-radius:999px;"></div>
-            </div>
-            <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
-                {num_responses} response{"s" if num_responses != 1 else ""}
-            </div>
-        </div>
         """, unsafe_allow_html=True)
     else:
         st.caption("⭐ No ratings yet — be the first!")
-        st.markdown("---")
-        st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
+    st.markdown("---")
+    st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
 # Main content area
 active_url = SOURCES[selected_source]
