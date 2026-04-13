@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import requests
 from datetime import datetime
+import json
+import os
 
 st.set_page_config(
     page_title="Sellers.json Analyzer",
@@ -11,7 +13,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for boxes and cards
 st.markdown("""
 <style>
     .metric-card {
@@ -38,49 +39,26 @@ st.markdown("""
         color: #1f2937;
         line-height: 1.2;
     }
-    .selection-box {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1rem 1.2rem;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 1rem;
-    }
     table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0.5rem; }
     thead tr { background: #f8f9fa; border-bottom: 2px solid #e0e0e0; }
     thead th { padding: 10px 14px; text-align: left; font-weight: 600; color: #444; font-size: 13px; }
     tbody tr { border-bottom: 1px solid #f0f0f0; }
     tbody tr:hover { background: #fafafa; }
     tbody td { padding: 8px 14px; color: #333; vertical-align: middle; }
-    .feedback-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        color: white;
-        margin-top: 1rem;
-        text-align: center;
-    }
     .feedback-button {
         background-color: white;
         color: #764ba2;
-        border: none;
+        border: 1px solid #764ba2;
         border-radius: 30px;
         padding: 0.6rem 1.5rem;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
-        transition: all 0.2s ease;
         text-decoration: none;
         display: inline-block;
         margin-top: 0.5rem;
     }
-    .feedback-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .stButton button {
-        border-radius: 20px;
-    }
+    .stButton button { border-radius: 20px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,7 +78,6 @@ SOURCES = {
 RATINGS_FILE = "ratings.json"
 
 def save_rating(score: int):
-    import json, os
     data = {"ratings": []}
     if os.path.exists(RATINGS_FILE):
         with open(RATINGS_FILE, "r") as f:
@@ -110,7 +87,6 @@ def save_rating(score: int):
         json.dump(data, f)
 
 def get_ratings():
-    import json, os
     if not os.path.exists(RATINGS_FILE):
         return None, 0
     with open(RATINGS_FILE, "r") as f:
@@ -119,7 +95,7 @@ def get_ratings():
     if not ratings:
         return None, 0
     return round(sum(ratings) / len(ratings), 2), len(ratings)
-    
+
 @st.cache_data(ttl=3600)
 def load_data(url: str):
     headers = {"User-Agent": "Mozilla/5.0 (compatible; SellersJsonAnalyzer/1.0)"}
@@ -135,108 +111,95 @@ def load_data(url: str):
 
 st.title("📊 Sellers.json Analyzer")
 
-# Sidebar for Controls and Feedback
 with st.sidebar:
-    
-    # Selection box for source
-    with st.container():
-        st.markdown("### 📡 Data Source Selection")
-        selected_source = st.selectbox(
-            "Choose sellers.json source",
-            options=list(SOURCES.keys()),
-            help="Select the adtech platform to analyze"
-        )
-        if st.button("🔄 Refresh Data", type="secondary", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Additional selection box for analysis options
-    with st.container():
-        st.markdown("### 📊 Analysis Options")
-        top_n_domains = st.selectbox(
-            "Top domains to display",
-            options=[10, 20, 30, 50],
-            index=1,
-            help="Number of top domains shown in the overview"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Feedback Section with button link to Google Form
+
+    st.markdown("### 📡 Data Source Selection")
+    selected_source = st.selectbox(
+        "Choose sellers.json source",
+        options=list(SOURCES.keys()),
+        help="Select the adtech platform to analyze"
+    )
+    if st.button("🔄 Refresh Data", type="secondary", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
+
+    st.markdown("### 📊 Analysis Options")
+    top_n_domains = st.selectbox(
+        "Top domains to display",
+        options=[10, 20, 30, 50],
+        index=1,
+        help="Number of top domains shown in the overview"
+    )
+
+    st.markdown("---")
     st.markdown("### 💬 Send Feedback")
     st.markdown("Help us improve the Sellers.json Analyzer!")
-    
-    # Google Form URL 
+
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
-    
-    # Create a button that opens the form in a new tab
-    st.markdown(f"""
-    <a href="{GOOGLE_FORM_URL}" target="_blank">
-        <button class="feedback-button">
-            📝 Open Feedback Form
-        </button>
-    </a>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank"><button class="feedback-button">📝 Open Feedback Form</button></a>', unsafe_allow_html=True)
+    st.caption("Opens in a new tab. Your responses go directly to the admin.")
 
-    avg_rating, num_responses = get_ratings()
+    st.markdown("---")
 
-    # Star rating input
+    # --- Rating widget ---
     if "submitted_rating" not in st.session_state:
         st.session_state.submitted_rating = False
 
-    selected = st.feedback("stars", key="user_rating")
-
-    if selected is not None and not st.session_state.submitted_rating:
-        save_rating(selected + 1)  # feedback returns 0-4, convert to 1-5
-        st.session_state.submitted_rating = True
-        st.rerun()
-
-    if st.session_state.submitted_rating:
+    if not st.session_state.submitted_rating:
+        st.markdown("**Rate this app:**")
+        selected = st.feedback("stars", key="user_rating")
+        if selected is not None:
+            save_rating(selected + 1)
+            st.session_state.submitted_rating = True
+            st.rerun()
+    else:
         st.success("Thanks for rating! ⭐")
-        avg_rating, num_responses = get_ratings()
+
+    # --- Gradient avg box ---
+    avg_rating, num_responses = get_ratings()
 
     if avg_rating is not None:
         pct = int((avg_rating - 1) / 4 * 100)
-        stars = "".join(
-            f'<span style="color:{"#f59e0b" if i <= round(avg_rating) else "#d1d5db"};font-size:18px;">★</span>'
+        filled = round(avg_rating)
+        stars = "".join([
+            "★" if i <= filled else "☆"
             for i in range(1, 6)
-        )
-        st.markdown(f"""
+        ])
+        st.markdown(
+            f"""
             <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);
-                        border:1px solid #bbf7d0;
-                        border-radius:12px;
-                        padding:14px 16px;
-                        margin-top:8px;
-                        text-align:center;">
-                
-                <div style="font-size:11px;
-                            color:#6b7280;
-                            font-weight:600;
-                            text-transform:uppercase;
-                            letter-spacing:0.8px;
-                            margin-bottom:6px;">
+                        border:1px solid #bbf7d0;border-radius:12px;
+                        padding:14px 16px;margin-top:8px;">
+                <div style="font-size:11px;color:#6b7280;font-weight:600;
+                            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">
                     ⭐ User satisfaction
                 </div>
-                
-                <div style="font-size:1.8rem;
-                            font-weight:700;
-                            color:#15803d;
-                            line-height:1;
-                            margin-bottom:4px;">
-                    {avg_rating} <span style="font-size:13px;font-weight:400;color:#6b7280;">/ 5</span>
+                <div style="font-size:1.8rem;font-weight:700;color:#15803d;
+                            line-height:1;margin-bottom:4px;">
+                    {avg_rating}&nbsp;<span style="font-size:13px;font-weight:400;color:#6b7280;">/ 5</span>
                 </div>
-                
-                <div style="margin-bottom:8px;">
+                <div style="font-size:20px;color:#f59e0b;margin-bottom:8px;letter-spacing:2px;">
                     {stars}
                 </div>
+                <div style="background:#d1fae5;border-radius:999px;height:8px;overflow:hidden;">
+                    <div style="background:linear-gradient(90deg,#34d399,#059669);
+                                height:8px;width:{pct}%;border-radius:999px;">
+                    </div>
+                </div>
+                <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
+                    {num_responses} response{"s" if num_responses != 1 else ""}
+                </div>
             </div>
-        """, unsafe_allow_html=True)
+            """,
+            unsafe_allow_html=True
+        )
     else:
         st.caption("⭐ No ratings yet — be the first!")
-    st.markdown("---")
-    st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
-# Main content area
+    st.markdown("---")
+    st.caption("📌 Admin: joaquim.francalanci@ogury.co")
+
+# Main content
 active_url = SOURCES[selected_source]
 st.caption(f"**Active Source:** {active_url}")
 
@@ -259,78 +222,38 @@ if df.empty:
 
 st.markdown("---")
 
-# KPI metrics displayed in styled boxes (border + background)
 col1, col2, col3, col4 = st.columns(4)
-
 with col1:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">Total Sellers</div>
-        <div class="metric-value">{:,}</div>
-    </div>
-    """.format(len(df)), unsafe_allow_html=True)
-
+    st.markdown('<div class="metric-card"><div class="metric-label">Total Sellers</div><div class="metric-value">{:,}</div></div>'.format(len(df)), unsafe_allow_html=True)
 with col2:
     publishers = len(df[df["seller_type"] == "PUBLISHER"])
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">Publishers</div>
-        <div class="metric-value">{:,}</div>
-    </div>
-    """.format(publishers), unsafe_allow_html=True)
-
+    st.markdown('<div class="metric-card"><div class="metric-label">Publishers</div><div class="metric-value">{:,}</div></div>'.format(publishers), unsafe_allow_html=True)
 with col3:
     intermediaries = len(df[df["seller_type"] == "INTERMEDIARY"])
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">Intermediaries</div>
-        <div class="metric-value">{:,}</div>
-    </div>
-    """.format(intermediaries), unsafe_allow_html=True)
-
+    st.markdown('<div class="metric-card"><div class="metric-label">Intermediaries</div><div class="metric-value">{:,}</div></div>'.format(intermediaries), unsafe_allow_html=True)
 with col4:
     both = len(df[df["seller_type"] == "BOTH"])
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">Both</div>
-        <div class="metric-value">{:,}</div>
-    </div>
-    """.format(both), unsafe_allow_html=True)
+    st.markdown('<div class="metric-card"><div class="metric-label">Both</div><div class="metric-value">{:,}</div></div>'.format(both), unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Tabs panel
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Search & Filter", "🌐 Domain Analysis", "📋 Raw Data"])
 
 with tab1:
     col_a, col_b = st.columns(2)
-
     with col_a:
         type_counts = df["seller_type"].value_counts().reset_index()
         type_counts.columns = ["Seller Type", "Count"]
-        fig_pie = px.pie(
-            type_counts,
-            names="Seller Type",
-            values="Count",
-            title="Seller Type Distribution",
-            color="Seller Type",
-            color_discrete_map=TYPE_COLORS,
-            hole=0.4
-        )
+        fig_pie = px.pie(type_counts, names="Seller Type", values="Count",
+                         title="Seller Type Distribution", color="Seller Type",
+                         color_discrete_map=TYPE_COLORS, hole=0.4)
         fig_pie.update_traces(textposition="outside", textinfo="percent+label")
         fig_pie.update_layout(showlegend=False, height=380)
         st.plotly_chart(fig_pie, use_container_width=True)
-
     with col_b:
-        fig_bar = px.bar(
-            type_counts,
-            x="Seller Type",
-            y="Count",
-            title="Seller Count by Type",
-            color="Seller Type",
-            color_discrete_map=TYPE_COLORS,
-            text="Count"
-        )
+        fig_bar = px.bar(type_counts, x="Seller Type", y="Count",
+                         title="Seller Count by Type", color="Seller Type",
+                         color_discrete_map=TYPE_COLORS, text="Count")
         fig_bar.update_traces(textposition="outside")
         fig_bar.update_layout(showlegend=False, height=380, yaxis_title="Count")
         st.plotly_chart(fig_bar, use_container_width=True)
@@ -338,35 +261,23 @@ with tab1:
     st.subheader(f"Top {top_n_domains} Domains by Seller Count")
     domain_counts = df[df["domain"] != "N/A"]["domain"].value_counts().head(top_n_domains).reset_index()
     domain_counts.columns = ["Domain", "Count"]
-    fig_domains = px.bar(
-        domain_counts,
-        x="Count",
-        y="Domain",
-        orientation="h",
-        color="Count",
-        color_continuous_scale=["#9FE1CB", "#0F6E56"],
-        title=f"Top {top_n_domains} Domains"
-    )
+    fig_domains = px.bar(domain_counts, x="Count", y="Domain", orientation="h",
+                         color="Count", color_continuous_scale=["#9FE1CB", "#0F6E56"],
+                         title=f"Top {top_n_domains} Domains")
     fig_domains.update_layout(height=550, yaxis={"categoryorder": "total ascending"}, coloraxis_showscale=False)
     st.plotly_chart(fig_domains, use_container_width=True)
 
 with tab2:
     st.subheader("Search & Filter Sellers")
-    
-    # Selection box for filters
-    with st.container():
-        
-        col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
-        with col_f1:
-            search_query = st.text_input("🔍 Search by name, domain or seller ID", placeholder="e.g. Google, publisher.com...")
-        with col_f2:
-            type_filter = st.multiselect("Seller Type", options=sorted(df["seller_type"].unique()), default=sorted(df["seller_type"].unique()))
-        with col_f3:
-            sort_by = st.selectbox("Sort by", ["name", "domain", "seller_type", "seller_id"])
-        st.markdown('</div>', unsafe_allow_html=True)
+    col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
+    with col_f1:
+        search_query = st.text_input("🔍 Search by name, domain or seller ID", placeholder="e.g. Google, publisher.com...")
+    with col_f2:
+        type_filter = st.multiselect("Seller Type", options=sorted(df["seller_type"].unique()), default=sorted(df["seller_type"].unique()))
+    with col_f3:
+        sort_by = st.selectbox("Sort by", ["name", "domain", "seller_type", "seller_id"])
 
     filtered = df[df["seller_type"].isin(type_filter)].copy()
-
     if search_query:
         mask = (
             filtered["name"].str.contains(search_query, case=False, na=False) |
@@ -374,9 +285,7 @@ with tab2:
             filtered["seller_id"].str.contains(search_query, case=False, na=False)
         )
         filtered = filtered[mask]
-
     filtered = filtered.sort_values(sort_by)
-
     st.markdown(f"**{len(filtered):,}** results")
 
     def tag_html(t):
@@ -389,67 +298,38 @@ with tab2:
 
     display_df = filtered[["name", "domain", "seller_type", "seller_id"]].copy().reset_index(drop=True)
     display_df["seller_type"] = display_df["seller_type"].apply(tag_html)
-
-    st.write(
-        display_df.to_html(escape=False, index=False),
-        unsafe_allow_html=True
-    )
+    st.write(display_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     csv = filtered.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "⬇️ Download filtered results as CSV",
-        csv,
-        f"{selected_source.lower()}_sellers_filtered.csv",
-        "text/csv"
-    )
+    st.download_button("⬇️ Download filtered results as CSV", csv,
+                       f"{selected_source.lower()}_sellers_filtered.csv", "text/csv")
 
 with tab3:
     st.subheader("Domain Analysis")
-    
-    # Selection box for domain analysis options
-    with st.container():
-        
-        col_d_opt1, col_d_opt2 = st.columns(2)
-        with col_d_opt1:
-            top_tlds_to_show = st.selectbox("Number of TLDs to display", [10, 15, 20, 25], index=1)
-        with col_d_opt2:
-            show_multi_domain_threshold = st.number_input("Minimum seller IDs per domain", min_value=1, max_value=10, value=2, step=1)
-        st.markdown('</div>', unsafe_allow_html=True)
+    col_d_opt1, col_d_opt2 = st.columns(2)
+    with col_d_opt1:
+        top_tlds_to_show = st.selectbox("Number of TLDs to display", [10, 15, 20, 25], index=1)
+    with col_d_opt2:
+        show_multi_domain_threshold = st.number_input("Minimum seller IDs per domain", min_value=1, max_value=10, value=2, step=1)
 
     col_d1, col_d2 = st.columns(2)
-
     with col_d1:
         st.markdown("**Top Level Domain (TLD) Distribution**")
         tld_series = df[df["domain"] != "N/A"]["domain"].dropna().str.extract(r'\.([a-zA-Z]{2,6})$')[0]
         tld_counts = tld_series.value_counts().head(top_tlds_to_show).reset_index()
         tld_counts.columns = ["TLD", "Count"]
-        fig_tld = px.bar(
-            tld_counts,
-            x="TLD",
-            y="Count",
-            color="Count",
-            color_continuous_scale=["#9FE1CB", "#0F6E56"],
-            title=f"Top {top_tlds_to_show} TLDs"
-        )
+        fig_tld = px.bar(tld_counts, x="TLD", y="Count", color="Count",
+                         color_continuous_scale=["#9FE1CB", "#0F6E56"], title=f"Top {top_tlds_to_show} TLDs")
         fig_tld.update_layout(coloraxis_showscale=False, height=380)
         st.plotly_chart(fig_tld, use_container_width=True)
-
     with col_d2:
         st.markdown("**Seller Type by TLD (Top 10)**")
         df_tld = df[df["domain"] != "N/A"].copy()
         df_tld["tld"] = df_tld["domain"].str.extract(r'\.([a-zA-Z]{2,6})$')[0]
         top_tlds = df_tld["tld"].value_counts().head(10).index
-        df_tld_top = df_tld[df_tld["tld"].isin(top_tlds)]
-        tld_type = df_tld_top.groupby(["tld", "seller_type"]).size().reset_index(name="count")
-        fig_tld_type = px.bar(
-            tld_type,
-            x="tld",
-            y="count",
-            color="seller_type",
-            color_discrete_map=TYPE_COLORS,
-            title="Seller Type by TLD",
-            barmode="stack"
-        )
+        tld_type = df_tld[df_tld["tld"].isin(top_tlds)].groupby(["tld", "seller_type"]).size().reset_index(name="count")
+        fig_tld_type = px.bar(tld_type, x="tld", y="count", color="seller_type",
+                              color_discrete_map=TYPE_COLORS, title="Seller Type by TLD", barmode="stack")
         fig_tld_type.update_layout(height=380, xaxis_title="TLD", yaxis_title="Count")
         st.plotly_chart(fig_tld_type, use_container_width=True)
 
@@ -459,34 +339,21 @@ with tab3:
         seller_types=("seller_type", lambda x: ", ".join(sorted(x.unique())))
     ).reset_index().sort_values("seller_count", ascending=False)
     multi_domain = multi_domain[multi_domain["seller_count"] >= show_multi_domain_threshold]
-
     st.markdown(f"**{len(multi_domain):,}** domains with {show_multi_domain_threshold}+ seller IDs")
-    st.dataframe(
-        multi_domain.head(50).reset_index(drop=True),
-        use_container_width=True,
-        height=350,
-        column_config={
-            "domain": st.column_config.TextColumn("Domain", width="medium"),
-            "seller_count": st.column_config.NumberColumn("# Seller IDs", width="small"),
-            "seller_types": st.column_config.TextColumn("Types", width="medium"),
-        }
-    )
+    st.dataframe(multi_domain.head(50).reset_index(drop=True), use_container_width=True, height=350,
+                 column_config={
+                     "domain": st.column_config.TextColumn("Domain", width="medium"),
+                     "seller_count": st.column_config.NumberColumn("# Seller IDs", width="small"),
+                     "seller_types": st.column_config.TextColumn("Types", width="medium"),
+                 })
 
 with tab4:
     st.subheader("Raw Data")
     st.markdown(f"**Version:** {version} | **Identifiers:** {identifiers}")
-    st.dataframe(
-        df.reset_index(drop=True),
-        use_container_width=True,
-        height=600
-    )
+    st.dataframe(df.reset_index(drop=True), use_container_width=True, height=600)
     csv_all = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "⬇️ Download full sellers.json as CSV",
-        csv_all,
-        f"{selected_source.lower()}_sellers_full.csv",
-        "text/csv"
-    )
+    st.download_button("⬇️ Download full sellers.json as CSV", csv_all,
+                       f"{selected_source.lower()}_sellers_full.csv", "text/csv")
 
 st.markdown("---")
 st.caption(f"Data loaded live from {active_url} · Cached for 1 hour · Built with Streamlit")
