@@ -97,6 +97,22 @@ SOURCES = {
     "Teads": "https://sellers.teads.tv/sellers.json",
 }
 
+SHEET_ID  = "14rWp5Vm45kb7cBNQoavTl0TrhA51XrqElXv1k7ewUSY"
+SHEET_GID = "567296836"
+
+@st.cache_data(ttl=300)
+def load_ratings():
+    csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={SHEET_GID}"
+    try:
+        df = pd.read_csv(csv_url)
+        for col in df.columns:
+            vals = pd.to_numeric(df[col], errors="coerce").dropna()
+            if len(vals) > 0 and vals.between(1, 5).all():
+                return round(vals.mean(), 2), int(len(vals))
+        return None, None
+    except Exception:
+        return None, None
+    
 @st.cache_data(ttl=3600)
 def load_data(url: str):
     headers = {"User-Agent": "Mozilla/5.0 (compatible; SellersJsonAnalyzer/1.0)"}
@@ -159,7 +175,36 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.caption("Opens in a new tab. Your responses go directly to the admin.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("---")
+
+    avg_rating, num_responses = load_ratings()
+
+    if avg_rating is not None:
+        pct = int((avg_rating - 1) / 4 * 100)
+        stars = "".join(
+            f'<span style="color:{"#f59e0b" if i <= round(avg_rating) else "#d1d5db"};font-size:18px;">★</span>'
+            for i in range(1, 6)
+        )
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;
+                    border-radius:12px;padding:14px 16px;">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;
+                        letter-spacing:0.8px;margin-bottom:6px;">⭐ User satisfaction</div>
+            <div style="font-size:1.8rem;font-weight:700;color:#15803d;line-height:1;margin-bottom:4px;">
+                {avg_rating} <span style="font-size:13px;font-weight:400;color:#6b7280;">/ 5</span>
+            </div>
+            <div style="margin-bottom:8px;">{stars}</div>
+            <div style="background:#d1fae5;border-radius:999px;height:8px;overflow:hidden;">
+                <div style="background:linear-gradient(90deg,#34d399,#059669);
+                            height:8px;width:{pct}%;border-radius:999px;"></div>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
+                {num_responses} response{"s" if num_responses != 1 else ""}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.caption("⭐ No ratings yet — be the first!")
     st.markdown("---")
     st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
