@@ -97,23 +97,28 @@ SOURCES = {
     "Teads": "https://sellers.teads.tv/sellers.json",
 }
 
-SHEET_ID  = "14rWp5Vm45kb7cBNQoavTl0TrhA51XrqElXv1k7ewUSY"
-SHEET_GID = "567296836"
+RATINGS_FILE = "ratings.json"
 
-@st.cache_data(ttl=300)
-def load_ratings():
-    csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={SHEET_GID}"
-    try:
-        df = pd.read_csv(csv_url)
-        candidates = [df.iloc[:, 2]] if df.shape[1] > 2 else []
-        candidates += [df[col] for col in df.columns]
-        for series in candidates:
-            vals = pd.to_numeric(series, errors="coerce").dropna()
-            if len(vals) > 0 and vals.between(1, 5).all():
-                return round(vals.mean(), 2), int(len(vals))
-        return None, None
-    except Exception:
-        return None, None
+def save_rating(score: int):
+    import json, os
+    data = {"ratings": []}
+    if os.path.exists(RATINGS_FILE):
+        with open(RATINGS_FILE, "r") as f:
+            data = json.load(f)
+    data["ratings"].append(score)
+    with open(RATINGS_FILE, "w") as f:
+        json.dump(data, f)
+
+def get_ratings():
+    import json, os
+    if not os.path.exists(RATINGS_FILE):
+        return None, 0
+    with open(RATINGS_FILE, "r") as f:
+        data = json.load(f)
+    ratings = data.get("ratings", [])
+    if not ratings:
+        return None, 0
+    return round(sum(ratings) / len(ratings), 2), len(ratings)
     
 @st.cache_data(ttl=3600)
 def load_data(url: str):
@@ -174,7 +179,23 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.caption("Opens in a new tab.")
-    avg_rating, num_responses = load_ratings()
+
+    avg_rating, num_responses = get_ratings()
+
+    # Star rating input
+    if "submitted_rating" not in st.session_state:
+        st.session_state.submitted_rating = False
+
+    selected = st.feedback("stars", key="user_rating")
+
+    if selected is not None and not st.session_state.submitted_rating:
+        save_rating(selected + 1)  # feedback returns 0-4, convert to 1-5
+        st.session_state.submitted_rating = True
+        st.rerun()
+
+    if st.session_state.submitted_rating:
+        st.success("Thanks for rating! ⭐")
+        avg_rating, num_responses = get_ratings()
 
     if avg_rating is not None:
         pct = int((avg_rating - 1) / 4 * 100)
@@ -184,7 +205,7 @@ with st.sidebar:
         )
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;
-                    border-radius:12px;padding:14px 16px;">
+                    border-radius:12px;padding:14px 16px;margin-top:8px;">
             <div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;
                         letter-spacing:0.8px;margin-bottom:6px;">⭐ User satisfaction</div>
             <div style="font-size:1.8rem;font-weight:700;color:#15803d;line-height:1;margin-bottom:4px;">
@@ -202,8 +223,8 @@ with st.sidebar:
         """, unsafe_allow_html=True)
     else:
         st.caption("⭐ No ratings yet — be the first!")
-    st.markdown("---")
-    st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
+        st.markdown("---")
+        st.caption(f"📌 Admin: joaquim.francalanci@ogury.co")
 
 # Main content area
 active_url = SOURCES[selected_source]
