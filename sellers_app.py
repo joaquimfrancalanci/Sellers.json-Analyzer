@@ -14,10 +14,6 @@ st.set_page_config(
 # Custom CSS for boxes and cards
 st.markdown("""
 <style>
-    div[data-testid="stFeedback"] {
-        display: flex;
-        justify-content: center;
-    }
     .metric-card {
         background: #ffffff;
         border-radius: 12px;
