@@ -126,18 +126,16 @@ with st.sidebar:
     st.markdown("### 📊 Analysis Options")
     top_n_domains = st.selectbox(
         "Top domains to display",
-        options=[10, 20, 30, 50],
+        options=[5, 10, 20, 30, 50],
         index=1,
         help="Number of top domains shown in the overview"
     )
 
-    
     st.markdown("### 💬 Send Feedback")
-    st.markdown("Help us improve the Sellers.json Analyzer!")
+    st.markdown("Help us improve it!")
 
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
     st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank"><button class="feedback-button">📝 Open Feedback Form</button></a>', unsafe_allow_html=True)
-    st.caption("Opens in a new tab.")
 
     # --- Rating widget ---
     if "submitted_rating" not in st.session_state:
