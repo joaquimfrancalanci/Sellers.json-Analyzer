@@ -105,8 +105,10 @@ def load_ratings():
     csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={SHEET_GID}"
     try:
         df = pd.read_csv(csv_url)
-        for col in df.columns:
-            vals = pd.to_numeric(df[col], errors="coerce").dropna()
+        candidates = [df.iloc[:, 2]] if df.shape[1] > 2 else []
+        candidates += [df[col] for col in df.columns]
+        for series in candidates:
+            vals = pd.to_numeric(series, errors="coerce").dropna()
             if len(vals) > 0 and vals.between(1, 5).all():
                 return round(vals.mean(), 2), int(len(vals))
         return None, None
@@ -124,8 +126,6 @@ def load_data(url: str):
     df["seller_type"] = df["seller_type"].fillna("UNKNOWN")
     df["name"] = df["name"].fillna("N/A")
     df["domain"] = df["domain"].fillna("N/A")
-    if "is_confidential" not in df.columns:
-        df["is_confidential"] = False
     return df, data.get("version"), data.get("identifiers", [])
 
 st.title("📊 Sellers.json Analyzer")
@@ -160,7 +160,6 @@ with st.sidebar:
     # Feedback Section with button link to Google Form
     st.markdown("### 💬 Send Feedback")
     st.markdown("Help us improve the Sellers.json Analyzer!")
-    st.markdown("Rate the app and share your suggestions (only @ogury.co emails).")
     
     # Google Form URL 
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
@@ -174,9 +173,7 @@ with st.sidebar:
     </a>
     """, unsafe_allow_html=True)
     
-    st.caption("Opens in a new tab. Your responses go directly to the admin.")
-    st.markdown("---")
-
+    st.caption("Opens in a new tab.")
     avg_rating, num_responses = load_ratings()
 
     if avg_rating is not None:
