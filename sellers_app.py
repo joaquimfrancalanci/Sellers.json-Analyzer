@@ -13,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ─── Ogury Brand Colors ───────────────────────────────────────────────────────
+# ─── Ogury Brand Colors (Light Theme) ────────────────────────────────────────
 OGURY = {
     "dark_teal":  "#005959",
     "turquoise":  "#0A9999",
@@ -21,6 +21,12 @@ OGURY = {
     "cream":      "#FFF9EC",
     "ocean":      "#003B63",
     "white":      "#FFFFFF",
+    # Light theme extras
+    "teal_light": "#E6F4F4",   # very light teal for sidebar bg
+    "teal_mid":   "#D0EBEB",   # for hover/card borders
+    "lime_light": "#F0FAE0",   # light lime for accents
+    "text_dark":  "#1A1A2E",   # near-black for readability
+    "text_mid":   "#4A4A6A",   # body text
 }
 
 st.markdown(f"""
@@ -28,49 +34,71 @@ st.markdown(f"""
     /* ── Global ── */
     html, body, [class*="css"] {{
         font-family: 'Montserrat', 'Inter', sans-serif;
+        color: {OGURY['text_dark']};
     }}
     .stApp {{
-        background-color: {OGURY['cream']};
+        background-color: {OGURY['white']};
     }}
 
     /* ── Top header bar ── */
     header[data-testid="stHeader"] {{
-        background: {OGURY['dark_teal']};
+        background: {OGURY['white']};
+        border-bottom: 2px solid {OGURY['teal_mid']};
     }}
 
-    /* ── Sidebar ── */
+    /* ── Sidebar — light teal tint ── */
     section[data-testid="stSidebar"] {{
-        background: {OGURY['dark_teal']} !important;
+        background: {OGURY['teal_light']} !important;
+        border-right: 2px solid {OGURY['teal_mid']};
     }}
     section[data-testid="stSidebar"] * {{
-        color: {OGURY['white']} !important;
+        color: {OGURY['text_dark']} !important;
+    }}
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] .stMarkdown h3 {{
+        color: {OGURY['dark_teal']} !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }}
     section[data-testid="stSidebar"] .stSelectbox label,
     section[data-testid="stSidebar"] .stMultiselect label,
     section[data-testid="stSidebar"] .stTextInput label {{
-        color: {OGURY['lime']} !important;
-        font-weight: 600;
+        color: {OGURY['dark_teal']} !important;
+        font-weight: 600 !important;
     }}
     section[data-testid="stSidebar"] .stButton > button {{
-        background: {OGURY['lime']};
-        color: {OGURY['dark_teal']};
+        background: {OGURY['dark_teal']};
+        color: {OGURY['lime']};
         border: none;
         border-radius: 20px;
         font-weight: 700;
     }}
+    section[data-testid="stSidebar"] .stButton > button:hover {{
+        background: {OGURY['turquoise']};
+        color: white;
+    }}
 
     /* ── Tabs ── */
     .stTabs [data-baseweb="tab-list"] {{
-        background: transparent;
-        gap: 4px;
+        background: {OGURY['teal_light']};
+        border-radius: 10px 10px 0 0;
+        gap: 2px;
+        padding: 6px 6px 0 6px;
     }}
     .stTabs [data-baseweb="tab"] {{
         background: white;
         border-radius: 8px 8px 0 0;
-        border: 1px solid #ddd;
+        border: 1px solid {OGURY['teal_mid']};
+        border-bottom: none;
         color: {OGURY['dark_teal']};
         font-weight: 600;
         padding: 8px 20px;
+    }}
+    .stTabs [data-baseweb="tab"]:hover {{
+        background: {OGURY['lime_light']};
+        color: {OGURY['dark_teal']};
     }}
     .stTabs [aria-selected="true"] {{
         background: {OGURY['dark_teal']} !important;
@@ -80,7 +108,7 @@ st.markdown(f"""
     .stTabs [data-baseweb="tab-panel"] {{
         background: white;
         border-radius: 0 8px 8px 8px;
-        border: 1px solid #ddd;
+        border: 1px solid {OGURY['teal_mid']};
         padding: 1.5rem;
     }}
 
@@ -89,21 +117,23 @@ st.markdown(f"""
         background: {OGURY['white']};
         border-radius: 12px;
         padding: 1rem 1.2rem;
+        border: 1px solid {OGURY['teal_mid']};
         border-left: 4px solid {OGURY['turquoise']};
-        box-shadow: 0 2px 8px rgba(0,89,89,0.08);
+        box-shadow: 0 1px 6px rgba(0,89,89,0.06);
         transition: all 0.2s ease;
     }}
     .metric-card:hover {{
-        box-shadow: 0 4px 16px rgba(0,89,89,0.15);
-        border-left-color: {OGURY['lime']};
+        box-shadow: 0 4px 14px rgba(0,89,89,0.12);
+        border-left-color: {OGURY['dark_teal']};
+        background: {OGURY['teal_light']};
     }}
     .metric-card .metric-label {{
-        font-size: 12px;
+        font-size: 11px;
         color: {OGURY['turquoise']};
         margin-bottom: 6px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
     }}
     .metric-card .metric-value {{
         font-size: 30px;
@@ -114,8 +144,10 @@ st.markdown(f"""
 
     /* ── Compare cards ── */
     .compare-header {{
-        background: {OGURY['dark_teal']};
-        color: {OGURY['lime']};
+        background: {OGURY['teal_light']};
+        color: {OGURY['dark_teal']};
+        border: 1px solid {OGURY['teal_mid']};
+        border-bottom: 2px solid {OGURY['turquoise']};
         border-radius: 10px 10px 0 0;
         padding: 10px 16px;
         font-weight: 700;
@@ -123,7 +155,7 @@ st.markdown(f"""
     }}
     .compare-body {{
         background: white;
-        border: 1px solid #ddd;
+        border: 1px solid {OGURY['teal_mid']};
         border-top: none;
         border-radius: 0 0 10px 10px;
         padding: 1rem;
@@ -131,17 +163,18 @@ st.markdown(f"""
 
     /* ── Tables ── */
     table {{ width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0.5rem; }}
-    thead tr {{ background: {OGURY['dark_teal']}; }}
+    thead tr {{ background: {OGURY['teal_light']}; border-bottom: 2px solid {OGURY['turquoise']}; }}
     thead th {{ padding: 10px 14px; text-align: left; font-weight: 700;
-                color: {OGURY['lime']}; font-size: 13px; }}
+                color: {OGURY['dark_teal']}; font-size: 13px; }}
     tbody tr {{ border-bottom: 1px solid #f0f0f0; }}
-    tbody tr:hover {{ background: {OGURY['cream']}; }}
-    tbody td {{ padding: 8px 14px; color: #333; vertical-align: middle; }}
+    tbody tr:hover {{ background: {OGURY['lime_light']}; }}
+    tbody td {{ padding: 8px 14px; color: {OGURY['text_dark']}; vertical-align: middle; }}
 
     /* ── Page title ── */
     .app-title {{
-        background: {OGURY['dark_teal']};
-        color: {OGURY['lime']};
+        background: {OGURY['teal_light']};
+        border: 1px solid {OGURY['teal_mid']};
+        border-left: 5px solid {OGURY['dark_teal']};
         padding: 1rem 1.5rem;
         border-radius: 12px;
         margin-bottom: 1.2rem;
@@ -153,11 +186,11 @@ st.markdown(f"""
         margin: 0;
         font-size: 1.6rem;
         font-weight: 800;
-        color: {OGURY['lime']};
+        color: {OGURY['dark_teal']};
     }}
     .app-title span {{
         font-size: 13px;
-        color: #a0d4d4;
+        color: {OGURY['turquoise']};
         margin-top: 2px;
     }}
 
@@ -173,7 +206,9 @@ st.markdown(f"""
 
     /* ── Rating box ── */
     .rating-box {{
-        background: linear-gradient(135deg, {OGURY['dark_teal']}, {OGURY['turquoise']});
+        background: white;
+        border: 1px solid {OGURY['teal_mid']};
+        border-left: 4px solid {OGURY['turquoise']};
         border-radius: 12px;
         padding: 14px 16px;
         margin-top: 8px;
@@ -293,7 +328,7 @@ with st.sidebar:
 
     st.markdown("### 💬 Feedback")
     GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe0Go2SeI3R_ceb9ekeX285dKvfHip9pM_KAtDngjNkiis1eQ/viewform?usp=pp_url"
-    st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank" style="display:inline-block;background:{OGURY["lime"]};color:{OGURY["dark_teal"]};border-radius:20px;padding:8px 18px;font-weight:700;text-decoration:none;font-size:13px;">📝 Open Feedback Form</a>', unsafe_allow_html=True)
+    st.markdown(f'<a href="{GOOGLE_FORM_URL}" target="_blank" style="display:inline-block;background:{OGURY["dark_teal"]};color:{OGURY["lime"]};border-radius:20px;padding:8px 18px;font-weight:700;text-decoration:none;font-size:13px;">📝 Open Feedback Form</a>', unsafe_allow_html=True)
 
     # ── Star rating — persists via file, survives reruns ──
     st.markdown("<br>", unsafe_allow_html=True)
@@ -301,14 +336,14 @@ with st.sidebar:
         st.session_state.submitted_rating = False
 
     if not st.session_state.submitted_rating:
-        st.markdown(f'<div style="color:{OGURY["lime"]};font-weight:700;margin-bottom:4px;">⭐ Rate this app</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:{OGURY["dark_teal"]};font-weight:700;margin-bottom:4px;">⭐ Rate this app</div>', unsafe_allow_html=True)
         selected = st.feedback("stars", key="user_rating")
         if selected is not None:
             save_rating(selected + 1)
             st.session_state.submitted_rating = True
             st.rerun()
     else:
-        st.markdown(f'<div style="color:{OGURY["lime"]};font-weight:600;">✅ Thanks for rating!</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:{OGURY["dark_teal"]};font-weight:600;">✅ Thanks for rating!</div>', unsafe_allow_html=True)
 
     avg_rating, num_responses = get_ratings()
     if avg_rating is not None:
@@ -317,7 +352,7 @@ with st.sidebar:
         stars = "".join(["★" if i <= filled else "☆" for i in range(1, 6)])
         st.markdown(f"""
         <div class="rating-box">
-            <div style="font-size:10px;color:#a0d4d4;font-weight:700;text-transform:uppercase;
+            <div style="font-size:10px;color:{OGURY["turquoise"]};font-weight:700;text-transform:uppercase;
                         letter-spacing:0.8px;margin-bottom:4px;">⭐ User Satisfaction</div>
             <div style="font-size:1.9rem;font-weight:800;color:{OGURY['lime']};line-height:1;margin-bottom:2px;">
                 {avg_rating}&nbsp;<span style="font-size:12px;font-weight:400;color:#a0d4d4;">/ 5  ({num_responses} votes)</span>
@@ -329,9 +364,9 @@ with st.sidebar:
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="color:#a0d4d4;font-size:12px;">No ratings yet — be the first!</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:{OGURY["turquoise"]};font-size:12px;">No ratings yet — be the first!</div>', unsafe_allow_html=True)
 
-    st.markdown(f'<div style="color:#a0d4d4;font-size:11px;margin-top:16px;">📌 Admin: joaquim.francalanci@ogury.co</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="color:{OGURY["text_mid"]};font-size:11px;margin-top:16px;">📌 Admin: joaquim.francalanci@ogury.co</div>', unsafe_allow_html=True)
 
 # ─── Load primary data ────────────────────────────────────────────────────────
 active_url = SOURCES[selected_source]
@@ -541,7 +576,7 @@ if tab_compare is not None and df_cmp is not None:
             st.markdown('</div>', unsafe_allow_html=True)
         with col_sep:
             st.markdown("<br><br><br>", unsafe_allow_html=True)
-            st.markdown(f'<div style="text-align:center;font-size:2rem;color:{OGURY["turquoise"]};font-weight:800;">VS</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="text-align:center;font-size:2rem;color:{OGURY["dark_teal"]};font-weight:800;">VS</div>', unsafe_allow_html=True)
         with col_right:
             st.markdown(f'<div class="compare-header">📦 {compare_source}</div><div class="compare-body">', unsafe_allow_html=True)
             render_metrics(df_cmp)
@@ -642,8 +677,9 @@ if tab_compare is not None and df_cmp is not None:
 
 # ─── Footer ───────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="margin-top:2rem;padding:12px 20px;background:{OGURY['dark_teal']};
-            border-radius:10px;color:#a0d4d4;font-size:12px;text-align:center;">
+<div style="margin-top:2rem;padding:12px 20px;background:{OGURY['teal_light']};
+            border:1px solid {OGURY['teal_mid']};border-left:4px solid {OGURY['dark_teal']};
+            border-radius:10px;color:{OGURY['text_mid']};font-size:12px;text-align:center;">
     Data loaded live · Cached for 1 hour · Built with Streamlit & Ogury brand ·
     <span style="color:{OGURY['lime']}">💡 Tip: Enable Compare Mode in the sidebar to benchmark two sources</span>
 </div>
