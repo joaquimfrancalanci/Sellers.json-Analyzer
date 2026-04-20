@@ -1,44 +1,57 @@
 # 📊 Sellers.json Analyzer
 
-A Streamlit web app to explore, filter, and compare `sellers.json` files from programmatic advertising platforms — built by Ogury's Supply team to solve a real operational gap in publisher transparency analysis.
+**Explore, filter and compare `sellers.json` files from programmatic advertising platforms.**
+
+*Built by Ogury's Supply team · Powered by Streamlit*
+
+![Python](https://img.shields.io/badge/Python-3.10+-005959?style=flat-square&logo=python&logoColor=C3EA76)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.32+-005959?style=flat-square&logo=streamlit&logoColor=C3EA76)
+![Plotly](https://img.shields.io/badge/Plotly-5.18+-0A9999?style=flat-square&logo=plotly&logoColor=white)
+![License](https://img.shields.io/badge/Internal-Ogury-C3EA76?style=flat-square)
+
+</div>
 
 ---
 
 ## What it does
 
-The app fetches `sellers.json` files live from adtech platforms and lets you explore and compare them interactively.
+The web-app fetches `sellers.json` files **live** from adtech platforms and lets you explore and compare them interactively — no manual JSON parsing, no SQL joins required.
 
-**Supported sources (configurable):**
-- Ogury — `https://sellers.ogury.com/`
-- Pubmatic — `https://cdn.pubmatic.com/sellers/data/sellers.json`
-- Teads — `https://sellers.teads.tv/sellers.json`
+**Supported sources** *(configurable)*
 
-### Tabs
+| Platform | URL |
+|---|---|
+| **Ogury** | `https://sellers.ogury.com/` |
+| **Pubmatic** | `https://cdn.pubmatic.com/sellers/data/sellers.json` |
+| **Teads** | `https://sellers.teads.tv/sellers.json` |
 
-**Overview**
-- Seller type distribution (Publisher / Intermediary / Both) as pie and bar charts
-- Top N domains by seller count (configurable)
+---
 
-**Search & Filter**
+## Features
+
+### 📈 Overview
+- Seller type distribution — Publisher / Intermediary / Both — as pie and bar charts
+- Top N domains by seller count *(configurable)*
+
+### 🔍 Search & Filter
 - Full-text search by seller name, domain, or seller ID
-- Filter by seller type
-- Sort by any field
+- Filter by seller type · Sort by any field
 - Download filtered results as CSV
 
-**Domain Analysis**
+### 🌐 Domain Analysis
 - Top-level domain (TLD) distribution and breakdown by seller type
-- Domains with multiple seller IDs (configurable threshold)
+- Domains with multiple seller IDs *(configurable threshold)*
 
-**Raw Data**
+### 📋 Raw Data
 - Full table view of all sellers
-- Download complete dataset as CSV
+- Download the complete dataset as CSV
 
-**Compare Mode** *(toggle in sidebar)*
+### 🆚 Compare Mode *(toggle in sidebar)*
 - Side-by-side KPI comparison between two platforms
 - Delta summary table with absolute and percentage differences
-- Seller type distribution chart — grouped by source
-- Domain overlap analysis: shared domains, platform-exclusive domains
-- Seller ID overlap: shared IDs, IDs only in one platform, with detail drill-down
+- Seller type distribution chart grouped by source
+- Domain overlap — shared domains, platform-exclusive domains
+- Seller ID overlap — shared IDs, IDs only in one platform, with detail drill-down
 - Download comparison summary as CSV
 
 ---
@@ -52,7 +65,7 @@ The app fetches `sellers.json` files live from adtech platforms and lets you exp
 | `plotly` | Interactive charts |
 | `requests` | Live HTTP fetching of sellers.json files |
 
-Data is cached for 1 hour to avoid repeated fetches on every interaction.
+> Data is cached for **1 hour** to avoid repeated fetches on every interaction.
 
 ---
 
@@ -80,7 +93,7 @@ The app will open in your browser at `http://localhost:8501`.
 
 ## Adding a new source
 
-To add another platform's `sellers.json`, edit the `SOURCES` dictionary in `sellers_app.py`:
+Edit the `SOURCES` dictionary in `sellers_app.py`:
 
 ```python
 SOURCES = {
@@ -95,5 +108,7 @@ SOURCES = {
 
 ## Feedback
 
-A feedback form and in-app star rating are available directly in the sidebar.  
+A feedback form and in-app star rating are available directly in the sidebar.
 For questions or issues: **joaquim.francalanci@ogury.co**
+
+---
