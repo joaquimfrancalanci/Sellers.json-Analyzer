@@ -1,3 +1,5 @@
+<div align="center">
+
 # 📊 Sellers.json Analyzer
 
 **Explore, filter and compare `sellers.json` files from programmatic advertising platforms.**
@@ -15,7 +17,7 @@
 
 ## What it does
 
-The web-app fetches `sellers.json` files **live** from adtech platforms and lets you explore and compare them interactively — no manual JSON parsing, no SQL joins required.
+The app fetches `sellers.json` files **live** from adtech platforms and lets you explore and compare them interactively — no manual JSON parsing, no SQL joins required.
 
 **Supported sources** *(configurable)*
 
@@ -29,30 +31,15 @@ The web-app fetches `sellers.json` files **live** from adtech platforms and lets
 
 ## Features
 
-### 📈 Overview
-- Seller type distribution — Publisher / Intermediary / Both — as pie and bar charts
-- Top N domains by seller count *(configurable)*
+| Tab | What you can do |
+|---|---|
+| 📈 **Overview** | Seller type breakdown (Publisher / Intermediary / Both) · Top N domains by seller count |
+| 🔍 **Search & Filter** | Full-text search by name, domain or seller ID · Filter by type · Sort · Export CSV |
+| 🌐 **Domain Analysis** | TLD distribution by seller type · Domains with multiple seller IDs |
+| 📋 **Raw Data** | Full table view · Download complete dataset as CSV |
+| 🆚 **Compare Mode** | Side-by-side KPIs · Delta table · Domain & seller ID overlap across two platforms |
 
-### 🔍 Search & Filter
-- Full-text search by seller name, domain, or seller ID
-- Filter by seller type · Sort by any field
-- Download filtered results as CSV
-
-### 🌐 Domain Analysis
-- Top-level domain (TLD) distribution and breakdown by seller type
-- Domains with multiple seller IDs *(configurable threshold)*
-
-### 📋 Raw Data
-- Full table view of all sellers
-- Download the complete dataset as CSV
-
-### 🆚 Compare Mode *(toggle in sidebar)*
-- Side-by-side KPI comparison between two platforms
-- Delta summary table with absolute and percentage differences
-- Seller type distribution chart grouped by source
-- Domain overlap — shared domains, platform-exclusive domains
-- Seller ID overlap — shared IDs, IDs only in one platform, with detail drill-down
-- Download comparison summary as CSV
+> **Compare Mode** is toggled from the sidebar and unlocks a dedicated tab with delta summaries, overlap analysis, and a comparison CSV export.
 
 ---
 
@@ -110,5 +97,3 @@ SOURCES = {
 
 A feedback form and in-app star rating are available directly in the sidebar.
 For questions or issues: **joaquim.francalanci@ogury.co**
-
----
