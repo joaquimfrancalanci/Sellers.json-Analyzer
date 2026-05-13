@@ -249,6 +249,10 @@ SOURCES = {
     "Ogury":    "https://sellers.ogury.com/",
     "Pubmatic": "https://cdn.pubmatic.com/sellers/data/sellers.json",
     "Teads":    "https://sellers.teads.tv/sellers.json",
+    "Verve":    "https://www.verve.com/sellers.json",
+    "MobileFuse": "https://mobilefuse.com/sellers.json",
+    "LoopMe": "https://loopme.com/sellers.json",
+    "InMobi": "https://www.inmobi.com/sellers.json"
 }
 
 # ─── Persistent ratings via st.session_state + storage API ───────────────────
